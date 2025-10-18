@@ -1,0 +1,64 @@
+x-deploy: &deploy
+  deploy:
+    resources:
+      limits:
+        memory: 16g  # Limit container memory
+      reservations:
+        memory: 16g  # Limit total memory+swap
+
+services:
+  gate:
+    image: nginx
+    restart: unless-stopped
+    volumes:
+      - ./mnt/gate:/etc/nginx/conf.d
+    ports:
+      - 8001:80
+    <<: *deploy
+
+  # / endpoint
+  app:
+    image: python:3.14.0-trixie
+    restart: unless-stopped
+    volumes:
+      - ./frontend:/app
+    ports:
+      - 8002:8080
+    working_dir: /app
+    entrypoint: python -m http.server 8080
+    <<: *deploy
+
+  # /api endpoint
+  core:
+    image: python:3.14.0-trixie
+    restart: unless-stopped
+    volumes:
+      - ./backend:/app
+      - ./mnt/data/input:/mnt/data/input
+      - ./mnt/data/output:/mnt/data/output
+    working_dir: /app
+    entrypoint: python -m http.server 8080
+    <<: *deploy
+
+  # /agent endpoint
+  agent:
+    image: python:3.14.0-trixie
+    restart: unless-stopped
+    volumes:
+      - ./agent:/app
+    working_dir: /app
+    entrypoint: python -m http.server 8080
+    <<: *deploy
+
+  # /render endpoint
+  render:
+    image: python:3.14.0-trixie
+    restart: unless-stopped
+    volumes:
+      - ./render:/app
+      - ./mnt/data/input:/mnt/data/input
+      - ./mnt/data/output:/mnt/data/output
+    working_dir: /app
+    entrypoint: python -m http.server 8080
+    <<: *deploy
+
