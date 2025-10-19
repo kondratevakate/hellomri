@@ -27,7 +27,8 @@ from app.core.limiter import limiter
 from app.core.logging import logger
 from app.core.metrics import setup_metrics
 from app.core.middleware import MetricsMiddleware
-from app.services.database import database_service
+from app.services.database import async_session_maker
+
 
 # Load environment variables
 load_dotenv()
@@ -135,25 +136,32 @@ async def root(request: Request):
 @app.get("/health")
 @limiter.limit(settings.RATE_LIMIT_ENDPOINTS["health"][0])
 async def health_check(request: Request) -> Dict[str, Any]:
-    """Health check endpoint with environment-specific information.
+    """Health check endpoint with environment-specific information."""
 
-    Returns:
-        Dict[str, Any]: Health status information
-    """
     logger.info("health_check_called")
 
-    # Check database connectivity
-    db_healthy = await database_service.health_check()
+    # Проверка подключения к базе данных
+    try:
+        async with async_session_maker() as session:
+            await session.execute("SELECT 1")
+            db_healthy = True
+    except Exception as e:
+        logger.error("database_health_check_failed", error=str(e))
+        db_healthy = False
 
     response = {
         "status": "healthy" if db_healthy else "degraded",
         "version": settings.VERSION,
         "environment": settings.ENVIRONMENT.value,
-        "components": {"api": "healthy", "database": "healthy" if db_healthy else "unhealthy"},
+        "components": {
+            "api": "healthy",
+            "database": "healthy" if db_healthy else "unhealthy",
+        },
         "timestamp": datetime.now().isoformat(),
     }
 
-    # If DB is unhealthy, set the appropriate status code
-    status_code = status.HTTP_200_OK if db_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
+    status_code = (
+        status.HTTP_200_OK if db_healthy else status.HTTP_503_SERVICE_UNAVAILABLE
+    )
 
     return JSONResponse(content=response, status_code=status_code)

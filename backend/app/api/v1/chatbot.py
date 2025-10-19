@@ -20,7 +20,7 @@ from app.core.config import settings
 from app.core.langgraph.graph import LangGraphAgent
 from app.core.limiter import limiter
 from app.core.logging import logger
-from app.models.session import Session
+from app.models.session.models import Session
 from app.schemas.chat import (
     ChatRequest,
     ChatResponse,

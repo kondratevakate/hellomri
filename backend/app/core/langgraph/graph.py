@@ -1,12 +1,6 @@
 """This file contains the LangGraph Agent/workflow and interactions with the LLM."""
 
-from typing import (
-    Any,
-    AsyncGenerator,
-    Dict,
-    Literal,
-    Optional,
-)
+from typing import Any, AsyncGenerator, Dict, Literal, Optional
 from urllib.parse import quote_plus
 
 from asgiref.sync import sync_to_async
@@ -27,10 +21,7 @@ from langgraph.types import StateSnapshot
 from openai import OpenAIError
 from psycopg_pool import AsyncConnectionPool
 
-from app.core.config import (
-    Environment,
-    settings,
-)
+from app.core.config import Environment, settings
 from app.core.langgraph.tools import tools
 from app.core.logging import logger
 from app.core.metrics import llm_inference_duration_seconds
@@ -60,6 +51,7 @@ class LangGraphAgent:
             temperature=settings.DEFAULT_LLM_TEMPERATURE,
             api_key=settings.LLM_API_KEY,
             max_tokens=settings.MAX_TOKENS,
+            base_url=settings.EVALUATION_BASE_URL,  # !!!!!!!!!! delete. change config
             **self._get_model_kwargs(),
         ).bind_tools(tools)
         self.tools_by_name = {tool.name: tool for tool in tools}
@@ -99,11 +91,8 @@ class LangGraphAgent:
                 # Configure pool size based on environment
                 max_size = settings.POSTGRES_POOL_SIZE
 
-                connection_url = (
-                    "postgresql://"
-                    f"{quote_plus(settings.POSTGRES_USER)}:{quote_plus(settings.POSTGRES_PASSWORD)}"
-                    f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}"
-                )
+                connection_url = "postgres://postgres:1917Atdhfkm@localhost:5432/agent"
+   # ! Заменить на Settings.
 
                 self._connection_pool = AsyncConnectionPool(
                     connection_url,
@@ -167,7 +156,7 @@ class LangGraphAgent:
 
                 # In production, we might want to fall back to a more reliable model
                 if settings.ENVIRONMENT == Environment.PRODUCTION and attempt == max_retries - 2:
-                    fallback_model = "gpt-4o"
+                    fallback_model = "deepseek-chat"   # !!!!!!!!!!!! Gemini
                     logger.warning(
                         "using_fallback_model", model=fallback_model, environment=settings.ENVIRONMENT.value
                     )

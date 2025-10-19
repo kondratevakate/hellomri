@@ -197,8 +197,8 @@ class Settings:
                 self.RATE_LIMIT_ENDPOINTS[endpoint] = value
 
         # Evaluation Configuration
-        self.EVALUATION_LLM = os.getenv("EVALUATION_LLM", "gpt-4o-mini")
-        self.EVALUATION_BASE_URL = os.getenv("EVALUATION_BASE_URL", "https://api.openai.com/v1")
+        self.EVALUATION_LLM = os.getenv("EVALUATION_LLM", "deepseek-chat")
+        self.EVALUATION_BASE_URL = os.getenv("EVALUATION_BASE_URL", "https://api.deepseek.com")
         self.EVALUATION_API_KEY = os.getenv("EVALUATION_API_KEY", self.LLM_API_KEY)
         self.EVALUATION_SLEEP_TIME = int(os.getenv("EVALUATION_SLEEP_TIME", "10"))
 
