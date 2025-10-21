@@ -18,6 +18,7 @@ from app.models.mri.models import Mri
 from app.models.session.models import Session
 from app.models.thread.models import Thread
 from app.models.user.models import User
+from app.models.clinic.models import Clinic
 
 config = context.config
 config.set_main_option("sqlalchemy.url", DATABASE_URL)
