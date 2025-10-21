@@ -1,12 +1,26 @@
-"""LangGraph tools for enhanced language model capabilities.
-
-This package contains custom tools that can be used with LangGraph to extend
-the capabilities of language models. Currently includes tools for web search
-and other external integrations.
+"""
+Регистрация всех инструментов для LangGraph агента
 """
 
-from langchain_core.tools.base import BaseTool
+from app.core.langgraph.tools.schedule_search import (
+    search_available_slots,
+    get_clinic_info,
+    get_all_clinics,
+    refresh_schedule,
+)
 
-from .duckduckgo_search import duckduckgo_search_tool
+# Список всех доступных инструментов
+tools = [
+    search_available_slots,
+    get_clinic_info,
+    get_all_clinics,
+    refresh_schedule,
+]
 
-tools: list[BaseTool] = [duckduckgo_search_tool]
+__all__ = [
+    "tools",
+    "search_available_slots",
+    "get_clinic_info",
+    "get_all_clinics",
+    "refresh_schedule",
+]
