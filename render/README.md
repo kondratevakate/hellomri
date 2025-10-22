@@ -2,6 +2,8 @@
 
 Minimal CPU-only segmentation pipeline that: (1) converts **DICOM → NIfTI** (2) runs atlas segmentation (default: `DKatlas`) (3) (Optional) Renders a cover PNG via **3D Slicer**.
 
+Preprocessing: MR images often contain smooth low-frequency intensity inhomogeneity (“bias field”) from RF coil/B1 nonuniformity, which distorts tissue intensities; applying N4 bias-field correction is a standard, validated way to remove this shading. Pipelines and models also face cross-scanner/protocol domain shift—measurements and contrasts vary by site—so registering to a common atlas and normalizing intensities helps stabilize downstream segmentation and analysis. We use [BrainLesion](https://github.com/BrainLesion/preprocessing/tree/main) to perform ANTs preprocessing with bias correction and atlas registration. Preprocessing script saves corrected volumes that are used by segmentation model. 
+
 ---
 
 ## Inputs
