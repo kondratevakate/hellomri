@@ -3,6 +3,10 @@ set -euo pipefail
 
 INPUT_DIR=${INPUT_DIR:-/mnt/input}
 OUTPUT_DIR=${OUTPUT_DIR:-/mnt/output}
+
+PREPROC_MODE=${PREPROC_MODE:-native}          # native | atlas
+ATLAS_T1=${ATLAS_T1:-}                        # set path if PREPROC_MODE=atlas
+
 # SLICER=/opt/Slicer/Slicer
 SLICER_BIN=${SLICER_BIN:-/Applications/Slicer.app/Contents/MacOS/Slicer}
 SCRIPT=/app/render_brain_cover.py
@@ -45,13 +49,27 @@ process_case() {
   echo "$in"
   if [ -d "$in" ]; then
     nii="$OUTPUT_DIR/$stem/${stem}.nii.gz"
-    echo "$in" "$nii"
     convert_dicom "$in" "$nii"
   fi
 
+  local preproc_dir="$OUTPUT_DIR/$stem/preproc"
+  echo "[INFO] ANTs preprocessing ($PREPROC_MODE): $nii"
+  if [ "$PREPROC_MODE" = "atlas" ] && [ -n "${ATLAS_T1:-}" ]; then
+    python /app/preprocess.py --mode atlas --t1 "$nii" --atlas "$ATLAS_T1" --outdir "$preproc_dir"
+  else
+    python /app/preprocess.py --mode native --t1 "$nii" --outdir "$preproc_dir"
+  fi
+  # pick best preprocessed file (written by the helper)
+  PREPICK=$(cat "$preproc_dir/_picked.txt" 2>/dev/null || true)
+  local seg_input="${PREPICK:-$nii}"
+  echo "[INFO] Using for segmentation: $seg_input"
+
   # 2) Segment with Brainchop CLI (CPU)
-  echo "[INFO] Brainchop: $nii"
-  brainchop "$nii" -m DKatlas -o "$OUTPUT_DIR/$stem/${stem}_seg.nii.gz"
+#   echo "[INFO] Brainchop: $nii"
+#   brainchop "$nii" -m DKatlas -o "$OUTPUT_DIR/$stem/${stem}_seg.nii.gz"
+  echo "[INFO] Brainchop: $seg_input"
+  printf 'n\n' | brainchop "$seg_input" -m DKatlas -o "$OUTPUT_DIR/$stem/${stem}_seg.nii.gz"
+
 
   # (Optional) 3) render with Slicer later if needed using $SLICER and $SCRIPT
   # 3) Render still (Slicer headless on macOS)

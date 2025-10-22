@@ -5,7 +5,7 @@ FROM python:3.11-slim
 # - clang + build-essential: tinygrad's CPU backend JIT-compiles kernels and needs a C compiler
 # - xvfb et al. only if you later add headless Slicer rendering; harmless to include
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    clang build-essential \
+    clang build-essential vim \
     xvfb xauth x11-apps libglib2.0-0 libxrender1 libsm6 libxext6 libxkbcommon0 libxcb1 \
   && rm -rf /var/lib/apt/lists/*
 
@@ -18,6 +18,11 @@ RUN pip install --no-cache-dir \
     SimpleITK \
     nibabel \
     numpy
+
+# BrainLes preprocessing + ANTsPyX (Python ANTs) for the ANTs backend
+RUN pip install --no-cache-dir \
+    brainles-preprocessing \
+    antspyx
 
 # 3) Runtime env: keep CPU-only small boxes happy
 # - tinygrad reads these env vars; clamp threads to your 4-core server
@@ -33,6 +38,7 @@ WORKDIR /app
 # (If your file is actually utils_mri.py, either rename it or adjust the entrypoint.)
 COPY dicom_convert.py /app/dicom_convert.py
 COPY entrypoint.sh     /app/entrypoint.sh
+COPY preprocess.py /app/preprocess.py
 RUN chmod +x /app/entrypoint.sh
 
 # 5) Helpful directories (you will bind-mount real paths at runtime)
