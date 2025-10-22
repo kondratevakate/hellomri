@@ -8,6 +8,10 @@ from app.core.langgraph.tools.schedule_search import (
     get_all_clinics,
     refresh_schedule,
 )
+from app.core.langgraph.tools.booking import (
+    book_appointment,
+    get_clinic_phone,
+)
 
 # Список всех доступных инструментов
 tools = [
@@ -15,6 +19,8 @@ tools = [
     get_clinic_info,
     get_all_clinics,
     refresh_schedule,
+    book_appointment,
+    get_clinic_phone,
 ]
 
 __all__ = [
@@ -23,4 +29,6 @@ __all__ = [
     "get_clinic_info",
     "get_all_clinics",
     "refresh_schedule",
+    "book_appointment",
+    "get_clinic_phone",
 ]
