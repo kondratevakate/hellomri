@@ -1,6 +1,7 @@
 from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine 
+from app.core.config import settings
 
 # Заменить на settings
 DATABASE_URL = "postgresql+asyncpg://postgres:1917Atdhfkm@localhost:5432/agent"

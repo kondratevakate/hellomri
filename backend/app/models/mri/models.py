@@ -10,14 +10,15 @@ if TYPE_CHECKING:
 
 
 class Mri(Base):
+
     id: Mapped[int] = mapped_column(primary_key=True)
     image_path: Mapped[str] = mapped_column(String, nullable=False)
     diagnosis: Mapped[DiagnosisEnum] = mapped_column(Enum(DiagnosisEnum), default=DiagnosisEnum.NORMAL)
-    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    user_id: Mapped[int] = mapped_column(ForeignKey("user.id"), nullable=False)
 
-    user: Mapped["User"] = relationship(back_populates="mri")
-    clinics: Mapped[List["Clinic"]] = relationship(back_populates="mri")
+    user: Mapped["User"] = relationship("User", back_populates="mri")
+    clinics: Mapped[List["Clinic"]] = relationship("Clinic", back_populates="mri")
 
     def __repr__(self):
-        return str(self.__dict__)
+        return f"<Mri id={self.id} user_id={self.user_id}>"
 
