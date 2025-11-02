@@ -1,6 +1,7 @@
 #!/bin/bash
-set -e
 
+set -e
+alembic upgrade head
 # Script to securely build Docker images without exposing secrets in build output
 
 if [ $# -ne 1 ]; then

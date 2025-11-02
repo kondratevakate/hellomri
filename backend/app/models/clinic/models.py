@@ -22,3 +22,5 @@ class Clinic(Base):
     def __repr__(self):
         return f"<Clinic id={self.id} user_id={self.user_id} mri_id={self.mri_id}>"
 
+from app.models.mri.models import Mri
+

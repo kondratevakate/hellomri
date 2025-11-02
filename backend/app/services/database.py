@@ -3,8 +3,8 @@ from sqlalchemy.orm import sessionmaker
 from sqlalchemy import create_engine 
 from app.core.config import settings
 
-# Заменить на settings
-DATABASE_URL = "postgresql+asyncpg://postgres:1917Atdhfkm@localhost:5432/agent"
+DATABASE_URL = (f"postgresql+asyncpg://{settings.POSTGRES_USER}:{settings.POSTGRES_PASSWORD}@"
+                f"{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}/{settings.POSTGRES_DB}")
 engine = create_async_engine(DATABASE_URL)
 
 async_session_maker = async_sessionmaker(engine, expire_on_commit = False)

@@ -18,36 +18,51 @@ from typing import (
 )
 
 from dotenv import load_dotenv
+from pydantic_settings import BaseSettings
 
 
 # Define environment types
-class Environment(str, Enum):
-    """Application environment types.
+from enum import Enum # Импортируем Enum для создания перечислений
+import os # Импортируем os для доступа к переменным окружения
 
-    Defines the possible environments the application can run in:
-    development, staging, production, and test.
+# Определяем перечисление Environment, наследуясь от str для удобства сравнения/вывода
+class Environment(str, Enum):
+    """Типы окружения приложения.
+
+    Определяет возможные окружения, в которых может работать приложение:
+    разработка, промежуточный сервер, продакшн и тестирование.
     """
 
-    DEVELOPMENT = "development"
-    STAGING = "staging"
-    PRODUCTION = "production"
-    TEST = "test"
+    # Значения перечисления
+    DEVELOPMENT = "development" # Окружение для разработки
+    STAGING = "staging"         # Промежуточное окружение (предпродакшн)
+    PRODUCTION = "production"   # Продакшн окружение
+    TEST = "test"               # Окружение для тестирования
 
 
-# Determine environment
+# Функция для определения текущего окружения
 def get_environment() -> Environment:
-    """Get the current environment.
+    """Получить текущее окружение.
 
     Returns:
-        Environment: The current environment (development, staging, production, or test)
+        Environment: Текущее окружение (development, staging, production или test)
     """
-    match os.getenv("APP_ENV", "development").lower():
+    # Получаем значение переменной окружения APP_ENV, по умолчанию "development"
+    # Приводим к нижнему регистру для нечувствительности к регистру
+    env_var = os.getenv("APP_ENV", "development").lower()
+
+    # Сопоставляем значение переменной с соответствующим элементом перечисления Environment
+    match env_var:
+        # Если значение "production" или "prod", возвращаем Environment.PRODUCTION
         case "production" | "prod":
             return Environment.PRODUCTION
+        # Если значение "staging" или "stage", возвращаем Environment.STAGING
         case "staging" | "stage":
             return Environment.STAGING
+        # Если значение "test", возвращаем Environment.TEST
         case "test":
             return Environment.TEST
+        # Для всех остальных значений (включая "development" по умолчанию), возвращаем Environment.DEVELOPMENT
         case _:
             return Environment.DEVELOPMENT
 
@@ -117,7 +132,7 @@ def parse_dict_of_lists_from_env(prefix, default_dict=None):
     return result
 
 
-class Settings:
+class Settings():
     """Application settings without using pydantic."""
 
     def __init__(self):
@@ -149,7 +164,7 @@ class Settings:
 
         # LangGraph Configuration
         self.LLM_API_KEY = os.getenv("LLM_API_KEY", "")
-        self.LLM_MODEL = os.getenv("LLM_MODEL", "gpt-4o-mini")
+        self.LLM_MODEL = os.getenv("LLM_MODEL", "deepseek-chat")
         self.DEFAULT_LLM_TEMPERATURE = float(os.getenv("DEFAULT_LLM_TEMPERATURE", "0.2"))
         self.MAX_TOKENS = int(os.getenv("MAX_TOKENS", "2000"))
         self.MAX_LLM_CALL_RETRIES = int(os.getenv("MAX_LLM_CALL_RETRIES", "3"))
@@ -173,7 +188,6 @@ class Settings:
         self.POSTGRES_POOL_SIZE = int(os.getenv("POSTGRES_POOL_SIZE", "20"))
         self.POSTGRES_MAX_OVERFLOW = int(os.getenv("POSTGRES_MAX_OVERFLOW", "10"))
         self.CHECKPOINT_TABLES = ["checkpoint_blobs", "checkpoint_writes", "checkpoints"]
-
 
         self.TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 	
