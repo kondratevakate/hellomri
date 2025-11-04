@@ -1,7 +1,25 @@
 version: '3.8'
 
 services:
-  # Single API service with dynamic environment
+  postgres:
+    image: pgvector/pgvector:pg16
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: always
+    networks:
+      - monitoring
+
   app:
     build:
       context: .
@@ -16,11 +34,10 @@ services:
       - .env.${APP_ENV:-development}
     environment:
       - APP_ENV=${APP_ENV:-development}
-      # Pass sensitive variables at runtime
-      - LLM_API_KEY=${LLM_API_KEY:-dummy-key-for-development}
-      - LANGFUSE_PUBLIC_KEY=${LANGFUSE_PUBLIC_KEY:-}
-      - LANGFUSE_SECRET_KEY=${LANGFUSE_SECRET_KEY:-}
       - JWT_SECRET_KEY=${JWT_SECRET_KEY:-supersecretkeythatshouldbechangedforproduction}
+    depends_on:
+      postgres:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
@@ -31,7 +48,6 @@ services:
     networks:
       - monitoring
 
-  # Prometheus
   prometheus:
     image: prom/prometheus:latest
     ports:
@@ -44,7 +60,6 @@ services:
       - monitoring
     restart: always
 
-  # Grafana
   grafana:
     image: grafana/grafana:latest
     ports:
@@ -73,10 +88,10 @@ services:
       - monitoring
     restart: always
 
-
 networks:
   monitoring:
     driver: bridge
 
 volumes:
-  grafana-storage: 
+  grafana-storage:
+  postgres-data:

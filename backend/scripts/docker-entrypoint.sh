@@ -4,12 +4,12 @@ set -e
 # Print initial environment values (before loading .env)
 echo "Starting with these environment variables:"
 echo "APP_ENV: ${APP_ENV:-development}"
-if [[ -n "$POSTGRES_URL" && "$POSTGRES_URL" == *"@"* ]]; then
-    INITIAL_DB_DISPLAY=$(echo "$POSTGRES_URL" | sed 's/.*@/@/')
-    echo "Initial Database URL: *********$INITIAL_DB_DISPLAY"
-else
-    echo "Initial Database URL: ${POSTGRES_URL:-Not set}"
-fi
+echo "Python: $(which python)"
+echo "Python version: $(python --version)"
+echo "Initial Database Host: $( [[ -n ${POSTGRES_HOST:-${DB_HOST:-}} ]] && echo 'set' || echo 'Not set' )"
+echo "Initial Database Port: $( [[ -n ${POSTGRES_PORT:-${DB_PORT:-}} ]] && echo 'set' || echo 'Not set' )"
+echo "Initial Database Name: $( [[ -n ${POSTGRES_DB:-${DB_NAME:-}} ]] && echo 'set' || echo 'Not set' )"
+echo "Initial Database User: $( [[ -n ${POSTGRES_USER:-${DB_USER:-}} ]] && echo 'set' || echo 'Not set' )"
 
 # Load environment variables from the appropriate .env file
 if [ -f ".env.${APP_ENV}" ]; then
@@ -73,19 +73,18 @@ fi
 echo -e "\nFinal environment configuration:"
 echo "Environment: ${APP_ENV:-development}"
 
-# Show only the part after @ for database URL (for security)
-if [[ -n "$POSTGRES_URL" && "$POSTGRES_URL" == *"@"* ]]; then
-    DB_DISPLAY=$(echo "$POSTGRES_URL" | sed 's/.*@/@/')
-    echo "Database URL: *********$DB_DISPLAY"
-else
-    echo "Database URL: ${POSTGRES_URL:-Not set}"
-fi
+echo "Database Host: $( [[ -n ${POSTGRES_HOST:-${DB_HOST:-}} ]] && echo 'set' || echo 'Not set' )"
+echo "Database Port: $( [[ -n ${POSTGRES_PORT:-${DB_PORT:-}} ]] && echo 'set' || echo 'Not set' )"
+echo "Database Name: $( [[ -n ${POSTGRES_DB:-${DB_NAME:-}} ]] && echo 'set' || echo 'Not set' )"
+echo "Database User: $( [[ -n ${POSTGRES_USER:-${DB_USER:-}} ]] && echo 'set' || echo 'Not set' )"
 
 echo "LLM Model: ${LLM_MODEL:-Not set}"
 echo "Debug Mode: ${DEBUG:-false}"
 
 # Run database migrations if necessary
-# e.g., alembic upgrade head
+echo "Running database migrations..."
+alembic upgrade head
 
 # Execute the CMD
+echo "Starting application..."
 exec "$@"
